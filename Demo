@@ -1,0 +1,24 @@
+import numpy as np
+import tensorflow as tf
+import time
+import os
+
+
+def split_input_target(chunk):
+   input_text = chunk[:-1]
+   target_text = chunk[1:]
+   return input_text, target_text
+
+
+f = open('text.txt', 'r', encoding='utf-8').read()
+voc = sorted(set(f))
+charId = {u:i for i,u in enumerate(voc)}
+Idchar = np.array(voc)
+textInt = np.array([charId[a] for a in f])
+seq_ln = 200
+char_dataset = tf.data.Dataset.from_tensor_slices(textInt)
+seq_try = char_dataset.batch(seq_ln+1, drop_remainder=True)
+df = seq_try.map(split_input_target)
+BATCH_SIZE = 64
+BUFFER_SIZE = 10000
+df = df.shuffle(BUFFER_SIZE).batch(BATCH_SIZE, drop_remainder=True)
